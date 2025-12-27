@@ -1,59 +1,382 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Blog API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API completa per gestione blog con autenticazione token-based, paginazione e filtri avanzati.
 
-## About Laravel
+## Stack Tecnologico
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 11
+- PHP 8.3
+- MySQL 8.0
+- Laravel Sanctum (authentication)
+- Nginx
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- ✅ Autenticazione JWT con Laravel Sanctum
+- ✅ CRUD completo per Posts
+- ✅ Sistema Categories con relazioni many-to-many
+- ✅ Comments system
+- ✅ Pagination dinamica
+- ✅ Search e filtri avanzati
+- ✅ API Resources per output controllato
 
-## Learning Laravel
+## Installazione
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 1. Clone repository
+```bash
+git clone https://github.com/ferdinandociotola/blog-api.git
+cd blog-api
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 2. Installa dipendenze
+```bash
+composer install
+```
 
-## Laravel Sponsors
+### 3. Configura environment
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Modifica `.env`:
+```
+DB_DATABASE=blog_api_local
+DB_USERNAME=blog_user
+DB_PASSWORD=tua_password
+```
 
-### Premium Partners
+### 4. Database setup
+```bash
+php artisan migrate
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 5. Avvia server
+```bash
+php artisan serve
+```
 
-## Contributing
+API disponibile su: `http://127.0.0.1:8000`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Autenticazione
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Register
+```bash
+POST /api/register
+```
 
-## Security Vulnerabilities
+**Body:**
+```json
+{
+  "name": "Mario Rossi",
+  "email": "mario@example.com",
+  "password": "password123",
+  "password_confirmation": "password123"
+}
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Response:**
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "Mario Rossi",
+    "email": "mario@example.com"
+  },
+  "token": "1|abc123..."
+}
+```
+
+### Login
+```bash
+POST /api/login
+```
+
+**Body:**
+```json
+{
+  "email": "mario@example.com",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "user": {...},
+  "token": "2|xyz789..."
+}
+```
+
+### Logout
+```bash
+POST /api/logout
+Authorization: Bearer {token}
+```
+
+---
+
+## Endpoints
+
+### Posts
+
+#### GET /api/posts - Lista post (paginata)
+
+**Parametri opzionali:**
+- `per_page` - Risultati per pagina (default: 10)
+- `page` - Numero pagina
+- `search` - Cerca in title/content
+- `status` - Filtra per status (published/draft)
+- `category_id` - Filtra per categoria
+- `order_by` - Campo ordinamento (default: created_at)
+- `order_direction` - Direzione (asc/desc, default: desc)
+
+**Esempi:**
+```bash
+# Tutti i post
+GET /api/posts
+
+# Search
+GET /api/posts?search=Laravel
+
+# Filtra published
+GET /api/posts?status=published
+
+# Pagination custom
+GET /api/posts?per_page=5&page=2
+
+# Combinazione filtri
+GET /api/posts?search=PHP&status=published&per_page=10
+```
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Primo Post",
+      "slug": "primo-post",
+      "content": "Contenuto...",
+      "status": "published",
+      "published_at": "2025-12-27 15:44:17",
+      "author": {
+        "id": 1,
+        "name": "Mario Rossi"
+      },
+      "categories": [],
+      "created_at": "2025-12-27 15:44:17"
+    }
+  ],
+  "meta": {
+    "total": 5,
+    "current_page": 1,
+    "last_page": 1,
+    "per_page": 10
+  },
+  "links": {
+    "first": "http://127.0.0.1:8000/api/posts?page=1",
+    "last": "http://127.0.0.1:8000/api/posts?page=1",
+    "prev": null,
+    "next": null
+  }
+}
+```
+
+#### GET /api/posts/{id} - Dettaglio post
+```bash
+GET /api/posts/1
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": 1,
+    "title": "Primo Post",
+    "slug": "primo-post",
+    "content": "Contenuto completo...",
+    "status": "published",
+    "published_at": "2025-12-27 15:44:17",
+    "author": {
+      "id": 1,
+      "name": "Mario Rossi"
+    },
+    "categories": [],
+    "created_at": "2025-12-27 15:44:17"
+  }
+}
+```
+
+#### POST /api/posts - Crea post (autenticato)
+```bash
+POST /api/posts
+Authorization: Bearer {token}
+```
+
+**Body:**
+```json
+{
+  "title": "Nuovo Post",
+  "content": "Contenuto del post...",
+  "status": "published",
+  "category_id": 1
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": 6,
+    "title": "Nuovo Post",
+    "slug": "nuovo-post",
+    ...
+  }
+}
+```
+
+#### PUT /api/posts/{id} - Aggiorna post (autenticato)
+```bash
+PUT /api/posts/1
+Authorization: Bearer {token}
+```
+
+**Body:**
+```json
+{
+  "title": "Titolo Aggiornato",
+  "content": "Contenuto aggiornato...",
+  "status": "draft"
+}
+```
+
+#### DELETE /api/posts/{id} - Elimina post (autenticato)
+```bash
+DELETE /api/posts/1
+Authorization: Bearer {token}
+```
+
+**Response:**
+```json
+{
+  "message": "Post eliminato con successo"
+}
+```
+
+---
+
+### Categories
+
+#### GET /api/categories - Lista categorie
+```bash
+GET /api/categories
+```
+
+#### GET /api/categories/{id} - Dettaglio categoria
+```bash
+GET /api/categories/1
+```
+
+---
+
+### Comments
+
+#### POST /api/posts/{post_id}/comments - Aggiungi comment (autenticato)
+```bash
+POST /api/posts/1/comments
+Authorization: Bearer {token}
+```
+
+**Body:**
+```json
+{
+  "content": "Ottimo post!"
+}
+```
+
+#### DELETE /api/comments/{id} - Elimina comment (autenticato)
+```bash
+DELETE /api/comments/1
+Authorization: Bearer {token}
+```
+
+---
+
+## Database Schema
+
+### users
+- id
+- name
+- email
+- password
+- created_at
+- updated_at
+
+### posts
+- id
+- user_id (FK → users)
+- title
+- slug
+- content
+- status (published/draft)
+- published_at
+- created_at
+- updated_at
+
+### categories
+- id
+- name
+- slug
+- created_at
+- updated_at
+
+### category_post (pivot)
+- category_id (FK → categories)
+- post_id (FK → posts)
+
+### comments
+- id
+- post_id (FK → posts)
+- user_id (FK → users)
+- content
+- created_at
+- updated_at
+
+---
+
+## Testing
+```bash
+# Test register
+curl -X POST http://127.0.0.1:8000/api/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@test.com","password":"password123","password_confirmation":"password123"}'
+
+# Test login
+curl -X POST http://127.0.0.1:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@test.com","password":"password123"}'
+
+# Test get posts
+curl http://127.0.0.1:8000/api/posts?per_page=5
+
+# Test create post (inserisci token)
+curl -X POST http://127.0.0.1:8000/api/posts \
+  -H "Authorization: Bearer {TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test Post","content":"Contenuto","status":"published","category_id":1}'
+```
+
+---
+
+## Autore
+
+Ferdinando Ciotola - [GitHub](https://github.com/ferdinandociotola)
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
