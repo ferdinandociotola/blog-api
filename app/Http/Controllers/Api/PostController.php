@@ -14,13 +14,44 @@ class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $posts = Post::with(['user', 'categories'])
-            ->where('status', 'published')
-            ->orderBy('published_at', 'desc')
-            ->paginate(10);
+        $query = Post::with(['user', 'categories']);
 
-        return new PostCollection($posts);
+	if ($request->has('search')) {
+		$search=$request->search;
+		$query->where(function($q) use ($search) {
+			$q->where('title', 'Like', "%{$search}")
+			->orWhere('content', 'LIKE', "%{$search}%");
+		});
+	}
+
+	if ($request->has('category_id')) {
+		$query->whereHas('categories', function($q) use ($request) {
+			$q->where('categories.id', $request->category_id);
+		});
+	}
+
+	if ($request->has('status')) {
+		$query->where('status', $request->status);
+	}
+
+		// Order by
+		$orderBy=$request->get('order_by', 'created_at');
+		$orderDirection=$request->get('order_direction','desc');
+
+		$query->orderBy($orderBy, $orderDirection);
+
+
+		$per_page=$request->get('per_page',10);
+		$posts=$query->paginate($per_page);
+
+	  	 return new PostCollection($posts);
+
     }
+
+
+
+
+
 
     public function show(Post $post)
     {
