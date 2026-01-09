@@ -103,6 +103,15 @@ php artisan test --coverage
 - ✅ Authorization (ownership checks)
 - ✅ Validation errors (422 responses)
 
+## 📸 Screenshots
+
+### GET /api/posts - Lista Posts
+![API Posts List](screenshots/api-posts-list.png)
+
+### POST /api/login - Autenticazione
+![API Login Token](screenshots/api-login-token.png)
+
+
 ## 📖 API Examples
 
 ### Login
