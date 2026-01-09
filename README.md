@@ -1,163 +1,145 @@
-# 🔐 Blog API - RESTful API con Autenticazione
+# Blog API - Laravel REST API
 
-> API completa per gestione blog con autenticazione token, gestione posts, 
-> categories, tags e comments. Progettata per essere consumata da frontend moderni 
-> o app mobile.
+Sistema completo di gestione blog con autenticazione, relazioni complesse e test automatici.
 
-![Laravel](https://img.shields.io/badge/Laravel-11-red)
-![API](https://img.shields.io/badge/REST-API-green)
-![Auth](https://img.shields.io/badge/Auth-Sanctum-blue)
+![Laravel](https://img.shields.io/badge/Laravel-11-red?logo=laravel)
+![PHP](https://img.shields.io/badge/PHP-8.3-blue?logo=php)
+![Tests](https://img.shields.io/badge/Tests-10%20passed-brightgreen)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql)
 
-## 🌐 API Online
+## 🚀 Demo Live
 
-**Base URL:** http://159.69.125.94/api
+- **API Base:** http://159.69.125.94/api
+- **Endpoint Posts:** http://159.69.125.94/api/posts
+- **GitHub:** https://github.com/ferdinandociotola/blog-api
 
-API deployata e funzionante. Testabile con Postman/cURL.
+## ✨ Features
 
-## 📡 Endpoint Principali
+### Core
+- ✅ REST API completa (CRUD Posts, Categories, Comments)
+- ✅ Autenticazione token (Laravel Sanctum)
+- ✅ Relazioni database complesse (1-N, N-N)
+- ✅ Paginazione, ricerca, filtri
+- ✅ API Resources per risposte strutturate
 
-### Posts
+### Sicurezza
+- ✅ Controllo ownership (solo owner modifica/cancella)
+- ✅ Validazione input su tutti endpoint
+- ✅ Token authentication per endpoint protetti
+- ✅ Test autorizzazione completi
+
+### Testing
+- ✅ 10 test automatici PHPUnit
+- ✅ Feature tests (CRUD completo)
+- ✅ Validazione tests (422 errors)
+- ✅ Authorization tests (403 forbidden)
+- ✅ 25 assertions - 0.4s execution
+
+## 📚 Endpoints
+
+### Public
 ```
-GET    /api/posts           - Lista posts (paginata)
-GET    /api/posts/{id}      - Dettaglio singolo post
-POST   /api/posts           - Crea nuovo post (auth required)
-PUT    /api/posts/{id}      - Modifica post (auth required)
-DELETE /api/posts/{id}      - Elimina post (auth required)
+GET    /api/posts              # Lista posts (paginata, ricerca, filtri)
+GET    /api/posts/{id}         # Dettaglio post
+GET    /api/categories         # Lista categorie
+POST   /api/register           # Registrazione utente
+POST   /api/login              # Login (restituisce token)
 ```
 
-### Autenticazione
+### Protected (require token)
 ```
-POST   /api/register        - Registrazione utente
-POST   /api/login           - Login (ritorna token)
-POST   /api/logout          - Logout (invalida token)
-```
-
-### Categories & Tags
-```
-GET    /api/categories      - Lista categorie
-GET    /api/tags            - Lista tags
+POST   /api/posts              # Crea post
+PUT    /api/posts/{id}         # Aggiorna post (solo owner)
+DELETE /api/posts/{id}         # Cancella post (solo owner)
+POST   /api/posts/{id}/comments # Aggiungi comment
+POST   /api/logout             # Logout
 ```
 
-## 🧪 Test con cURL
+## 🛠️ Tech Stack
 
-### Registrazione
+- **Framework:** Laravel 11
+- **Database:** MySQL 8.0
+- **Authentication:** Laravel Sanctum (token-based)
+- **Testing:** PHPUnit 11.5
+- **Server:** Nginx, Ubuntu 24.04
+- **Tools:** Git, Composer, Artisan
+
+## 📦 Installazione
 ```bash
-curl -X POST http://159.69.125.94/api/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Test User",
-    "email": "test@example.com",
-    "password": "password123",
-    "password_confirmation": "password123"
-  }'
+# Clone repository
+git clone https://github.com/ferdinandociotola/blog-api
+cd blog-api
+
+# Install dependencies
+composer install
+
+# Setup environment
+cp .env.example .env
+php artisan key:generate
+
+# Database
+php artisan migrate
+php artisan db:seed
+
+# Start server
+php artisan serve
 ```
+
+## 🧪 Testing
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test
+php artisan test --filter=test_can_create_post
+
+# With coverage
+php artisan test --coverage
+```
+
+**Test Coverage:**
+- ✅ Authentication (login, validation)
+- ✅ CRUD operations (create, read, update, delete)
+- ✅ Authorization (ownership checks)
+- ✅ Validation errors (422 responses)
+
+## 📖 API Examples
 
 ### Login
 ```bash
 curl -X POST http://159.69.125.94/api/login \
   -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "password123"
-  }'
+  -d '{"email": "user@example.com", "password": "password"}'
 ```
 
-### Crea Post (con token)
+### Create Post (authenticated)
 ```bash
 curl -X POST http://159.69.125.94/api/posts \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{
-    "title": "Nuovo Post",
-    "content": "Contenuto del post",
-    "category_id": 1
-  }'
+  -d '{"title": "My Post", "content": "Content here", "status": "published"}'
 ```
 
-## ⚙️ Funzionalità
-
-### Core Features
-- ✅ CRUD completo posts, categories, tags, comments
-- ✅ Autenticazione token-based (Laravel Sanctum)
-- ✅ Paginazione automatica risultati
-- ✅ Ricerca e filtri avanzati
-- ✅ API Resources per output consistente
-- ✅ Validazione dati rigorosa
-
-### Sicurezza
-- 🔐 Token authentication
-- 🔒 Rate limiting
-- ✅ CORS configurato
-- ✅ Validazione input completa
-
-## 🛠️ Stack Tecnico
-
-- **Framework:** Laravel 11
-- **Auth:** Laravel Sanctum
-- **Database:** MySQL 8.0
-- **Server:** Nginx, Ubuntu 24.04
-
-## 📋 Database Design
-```
-users (id, name, email, password)
-  └── posts (id, user_id, title, slug, content, published_at)
-        ├── categories (id, name, slug)
-        ├── tags (id, name, slug)
-        └── comments (id, post_id, user_id, content)
-```
-
-## 🚀 Installazione
+### Get Posts (with filters)
 ```bash
-git clone https://github.com/ferdinandociotola/blog-api.git
-cd blog-api
-
-composer install
-
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-
-php artisan serve
+curl "http://159.69.125.94/api/posts?search=laravel&category_id=1&per_page=20"
 ```
 
-## 📖 Documentazione API
+## 🗄️ Database Schema
 
-Tutti gli endpoint ritornano JSON con struttura consistente:
+- **users** (id, name, email, password)
+- **posts** (id, user_id, title, slug, content, status, published_at)
+- **categories** (id, name, slug)
+- **comments** (id, user_id, post_id, content)
+- **category_post** (pivot: post_id, category_id)
 
-### Success Response
-```json
-{
-  "success": true,
-  "data": { ... },
-  "message": "Operazione completata"
-}
-```
-
-### Error Response
-```json
-{
-  "success": false,
-  "message": "Errore descrittivo",
-  "errors": { ... }
-}
-```
-
-## 💡 Perché questo progetto?
-
-Dimostra competenze essenziali per integrazioni aziendali moderne:
-
-- API design professionale
-- Autenticazione sicura
-- Documentazione chiara
-- Pronto per integrazione con app/frontend
-- Scalabile e manutenibile
-
-## 👨‍💻 Autore
+## 👨‍💻 Author
 
 **Ferdinando Ciotola**
-- Email: nandociotola@gmail.com
+- GitHub: [@ferdinandociotola](https://github.com/ferdinandociotola)
 - LinkedIn: [ferdinando-ciotola](https://linkedin.com/in/ferdinando-ciotola)
+- Email: nandociotola@gmail.com
 
-## 📄 Licenza
+## 📄 License
 
-MIT License
+Open source - Educational/Portfolio project
